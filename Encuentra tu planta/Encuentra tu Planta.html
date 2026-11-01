@@ -1,0 +1,544 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Encuentra tu Planta</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: cabaña de la chamana — Ana a la izquierda, mesa de madera con el memorama a la derecha; en móvil se apila */
+:root{
+  color-scheme: dark;
+  --sky-1:#2b2858; --sky-2:#3f3d7e; --jungle:#1f3b33; --night:#14201b;
+  --wood:#6b3f22; --wood-hi:#8a5530; --wood-dk:#3e2412;
+  --parch:#f3e7c9; --parch-dk:#e2d0a4; --ink:#2b1b12;
+  --cream:#f6ead0; --gold:#f2c230; --leaf:#5fbf3f; --leaf-dk:#2f6e2a;
+  --panel:#1a1512; --panel-line:#e9d9b4; --danger:#e0603a; --muted:#c9b896;
+  --display:"Pixelify Sans","Courier New",monospace;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  background:
+    radial-gradient(1px 1px at 12% 8%, #fff8 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 5%, #fff6 50%, transparent 51%),
+    radial-gradient(1px 1px at 88% 14%, #fff7 50%, transparent 51%),
+    radial-gradient(1px 1px at 40% 11%, #fff5 50%, transparent 51%),
+    linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 18%,#355a6a 34%,var(--jungle) 52%,var(--night) 100%);
+  background-attachment:fixed;
+  color:var(--cream); font-family:var(--body); font-size:15px; line-height:1.5;
+}
+.wrap{max-width:1180px;margin:0 auto;padding-block:18px 40px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:16px}
+
+/* ---------- Cabecera ---------- */
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+.hud{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--panel);border:3px solid var(--panel-line);box-shadow:0 0 0 2px var(--ink),4px 4px 0 #0007;
+  padding:4px 12px;font-family:var(--display);font-size:20px;display:flex;gap:10px;align-items:baseline;min-width:0}
+.chip b{color:var(--gold);font-variant-numeric:tabular-nums;font-weight:700}
+.sign{position:relative;background:linear-gradient(var(--wood-hi),var(--wood));border:4px solid var(--wood-dk);
+  box-shadow:inset 0 3px 0 #ffffff22,inset 0 -4px 0 #0004,6px 6px 0 #0006;padding:8px 22px 10px;text-align:center}
+.sign::before,.sign::after{content:"";position:absolute;top:50%;width:8px;height:8px;background:#c9a36a;border:2px solid var(--wood-dk);transform:translateY(-50%)}
+.sign::before{left:6px}.sign::after{right:6px}
+.sign .t1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.06em;color:var(--cream);text-shadow:2px 2px 0 var(--wood-dk);line-height:1}
+.sign .t2{font-family:var(--display);font-weight:700;font-size:44px;letter-spacing:.04em;line-height:1;color:var(--leaf);
+  text-shadow:0 3px 0 var(--leaf-dk),3px 3px 0 var(--leaf-dk),3px 6px 0 var(--wood-dk)}
+h1{margin:0;font:inherit}
+
+/* ---------- Controles ---------- */
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{display:flex;border:3px solid var(--panel-line);box-shadow:0 0 0 2px var(--ink);background:var(--panel)}
+.seg button{border:0;background:transparent;color:var(--muted);font-family:var(--display);font-size:16px;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--leaf-dk);color:var(--cream)}
+.seg button+button{border-left:2px solid #e9d9b444}
+.btn{font-family:var(--display);font-size:16px;cursor:pointer;border:3px solid var(--wood-dk);background:linear-gradient(var(--wood-hi),var(--wood));
+  color:var(--cream);padding:6px 14px;box-shadow:inset 0 2px 0 #ffffff22,3px 3px 0 #0007}
+.btn:hover{filter:brightness(1.12)}
+.btn:active{transform:translate(2px,2px);box-shadow:inset 0 2px 0 #ffffff22,1px 1px 0 #0007}
+.btn.primary{background:linear-gradient(#73c94e,#3f8f2f);border-color:#1f4a1a}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.spacer{flex:1}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+/* ---------- Principal ---------- */
+main{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
+.ana{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ana-top{display:flex;flex-direction:column;gap:12px}
+.portrait{background:linear-gradient(#3a2a22,#241913);border:4px solid var(--wood-dk);box-shadow:inset 0 0 0 3px #c9a36a55,5px 5px 0 #0006;
+  padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.character{width:144px;aspect-ratio:3/4;display:block}
+.character-art{width:100%;height:100%;background-image:url("ana-movimientos.png");background-repeat:no-repeat;background-size:600% 300%;background-position:0 0;image-rendering:pixelated}
+.portrait .who{font-family:var(--display);font-size:15px;color:var(--gold);letter-spacing:.05em}
+.portrait.bounce .character{animation:bounce .5s steps(4)}
+@keyframes bounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}70%{transform:translateY(-2px)}}
+@keyframes ana-idle{0%,30%{background-position:0 0}35%,65%{background-position:20% 0}70%,100%{background-position:40% 0}}
+@keyframes ana-thinking{0%,16%{background-position:0 50%}17%,32%{background-position:20% 50%}33%,48%{background-position:40% 50%}49%,64%{background-position:60% 50%}65%,80%{background-position:80% 50%}81%,100%{background-position:100% 50%}}
+@keyframes ana-found{0%,14%{background-position:100% 0}15%,29%{background-position:60% 50%}30%,44%{background-position:80% 50%}45%,59%{background-position:100% 50%}60%,73%{background-position:20% 100%}74%,87%{background-position:40% 100%}88%,100%{background-position:60% 100%}}
+@keyframes ana-oops{0%,55%{background-position:60% 0}56%,100%{background-position:40% 0}}
+@keyframes ana-cheer{0%,32%{background-position:20% 100%}33%,65%{background-position:40% 100%}66%,100%{background-position:60% 100%}}
+.portrait[data-pose="idle"] .character-art{animation:ana-idle 2.4s steps(1) infinite}
+.portrait[data-pose="thinking"] .character-art{background-position:0 50%;animation:ana-thinking 1.8s steps(1) infinite}
+.portrait[data-pose="found"] .character-art{background-position:100% 0;animation:ana-found 1.8s steps(1) forwards}
+.portrait[data-pose="oops"] .character-art{background-position:60% 0;animation:ana-oops 1s steps(1) forwards}
+.portrait[data-pose="win"] .character-art{background-position:20% 100%;animation:ana-cheer .8s steps(1) infinite}
+.bubble{position:relative;background:var(--parch);color:var(--ink);border:3px solid var(--ink);box-shadow:4px 4px 0 #0006;
+  padding:12px 14px;font-family:var(--display);font-size:17px;line-height:1.35;min-height:84px}
+.bubble::before{content:"";position:absolute;top:-12px;left:38px;border:9px solid transparent;border-bottom:12px solid var(--ink);border-top:0}
+.bubble::after{content:"";position:absolute;top:-7px;left:41px;border:6px solid transparent;border-bottom:8px solid var(--parch);border-top:0}
+
+.ficha{background:var(--parch);color:var(--ink);border:3px solid var(--wood-dk);box-shadow:4px 4px 0 #0006;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.ficha .head{display:flex;gap:12px;align-items:center}
+.ficha img{width:64px;height:64px;image-rendering:pixelated;background:var(--parch-dk);border:2px solid var(--wood-dk);flex:none}
+.ficha h2{margin:0;font-family:var(--display);font-size:22px;line-height:1.1;text-wrap:balance}
+.ficha .sci{font-style:italic;font-size:13px;color:#6b5236}
+.ficha .lbl{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b5236}
+.ficha p{margin:0;font-size:14px}
+.ficha .warn{background:#f6d6c4;border-left:4px solid var(--danger);padding:6px 8px}
+.ficha.empty p{color:#6b5236}
+.eyebrow{font-family:var(--display);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+
+/* ---------- Mesa y cartas ---------- */
+.table{background:
+  repeating-linear-gradient(180deg,transparent 0 46px,#0000002a 46px 49px),
+  repeating-linear-gradient(90deg,#ffffff06 0 3px,transparent 3px 11px),
+  linear-gradient(var(--wood-hi),var(--wood) 40%,#5a331b);
+  border:5px solid var(--wood-dk);box-shadow:inset 0 4px 0 #ffffff1a,8px 8px 0 #0006;padding:clamp(10px,2.4vw,22px);min-width:0}
+.board{--cols:4;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:clamp(6px,1.4vw,12px);
+  max-width:calc(var(--cols) * 128px);margin:0 auto}
+.card{position:relative;aspect-ratio:3/4;border:0;padding:0;background:transparent;cursor:pointer;perspective:700px;font:inherit;color:inherit}
+.card .inner{position:absolute;inset:0;transition:transform .42s steps(6);transform-style:preserve-3d}
+.card.up .inner,.card.done .inner,.card.peek .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:3px solid #e9d9b4;box-shadow:0 0 0 2px var(--ink),3px 4px 0 #0007}
+.back{background:#1f4d3c;background-image:var(--backleaf),repeating-linear-gradient(45deg,#ffffff07 0 4px,transparent 4px 8px);
+  background-repeat:no-repeat,repeat;background-position:center;background-size:56% auto,auto;image-rendering:pixelated}
+.back::after{content:"";position:absolute;inset:5px;border:2px solid #e9d9b455}
+.front{transform:rotateY(180deg);background:var(--parch);color:var(--ink);padding:6% 6% 4%;gap:2px}
+.front img{width:82%;height:auto;image-rendering:pixelated;flex:none}
+.front .nm{font-family:var(--display);font-size:clamp(10px,1.35vw,14px);line-height:1.05;text-align:center;font-weight:600;text-wrap:balance}
+.front.name{background:#efe0bb;justify-content:center;gap:6px;padding:8%}
+.front.name .nm{font-size:clamp(12px,1.8vw,19px)}
+.front.name .sc{font-family:var(--body);font-style:italic;font-size:clamp(9px,1vw,11px);color:#6b5236;text-align:center;line-height:1.15}
+.front.name::before{content:"";width:40%;height:3px;background:var(--leaf-dk)}
+.front.name::after{content:"";width:40%;height:3px;background:var(--leaf-dk)}
+.card.done .front{background:#dff0c8}
+.card.done .front.name{background:#d6ebbb}
+.card.done{cursor:default}
+.card.done .face{box-shadow:0 0 0 2px var(--ink),0 0 0 5px var(--leaf),3px 4px 0 #0007}
+.card.shake .inner{animation:shake .35s steps(5)}
+@keyframes shake{0%,100%{translate:0}25%{translate:-4px}50%{translate:4px}75%{translate:-2px}}
+.card:hover:not(.done):not(.up) .back{filter:brightness(1.18)}
+
+.note{font-size:12.5px;color:var(--muted);text-align:center;max-width:70ch;margin:0 auto}
+
+/* ---------- Modales ---------- */
+.overlay{position:fixed;inset:0;background:#0b0f0dcc;display:flex;align-items:center;justify-content:center;z-index:20;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--parch);color:var(--ink);border:4px solid var(--wood-dk);box-shadow:0 0 0 3px var(--parch-dk),8px 8px 0 #000a;
+  width:min(760px,100%);max-height:100%;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.modal h2{margin:0;font-family:var(--display);font-size:28px;line-height:1.1}
+.modal .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stars{font-family:var(--display);font-size:40px;letter-spacing:.15em;color:#c9952a;text-shadow:2px 2px 0 var(--wood-dk)}
+.stars .off{color:#cdbb92;text-shadow:none}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.stat{background:#fff6;border:2px solid var(--parch-dk);padding:8px 10px}
+.stat .k{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b5236}
+.stat .v{font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums}
+.new{color:#2f6e2a;font-family:var(--display)}
+.herb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.herb{border:2px solid var(--parch-dk);background:#fff5;padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font:inherit;color:inherit}
+.herb img{width:64px;height:64px;image-rendering:pixelated}
+.herb span{font-family:var(--display);font-size:13px;text-align:center;line-height:1.1}
+.herb.locked{cursor:default}
+.herb.locked img{filter:brightness(0) opacity(.3)}
+.herb.locked span{color:#9a8664}
+.herb:not(.locked):hover{background:#dff0c8}
+.modal .btn{color:var(--cream)}
+.modal .ficha{box-shadow:none;border-width:2px}
+.meter{height:12px;background:#e2d0a4;border:2px solid var(--wood-dk)}
+.meter i{display:block;height:100%;background:var(--leaf-dk)}
+
+@media (max-width:860px){
+  main{grid-template-columns:minmax(0,1fr)}
+  .ana{order:2}
+  .ana-top{flex-direction:row;align-items:flex-start}
+  .portrait{flex:none;padding:6px}
+  .character{width:88px}
+  .bubble{flex:1;min-width:0;font-size:15px}
+  .bubble::before{top:24px;left:-12px;border:9px solid transparent;border-right:12px solid var(--ink);border-left:0}
+  .bubble::after{top:27px;left:-7px;border:6px solid transparent;border-right:8px solid var(--parch);border-left:0}
+  .table{order:1}
+  .sign .t2{font-size:36px}
+}
+@media (max-width:560px){
+  .board{grid-template-columns:repeat(var(--cols-m,var(--cols)),minmax(0,1fr))}
+  .chip{font-size:16px;padding:3px 9px}
+  .front .nm{font-size:10px}
+  .seg button,.btn{font-size:14px;padding:5px 9px}
+}
+@media (prefers-reduced-motion:reduce){
+  .card .inner{transition:none}
+  .card.shake .inner,.portrait.bounce .character{animation:none}
+  .character-art{animation:none!important}
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="hud" aria-live="polite">
+      <div class="chip">Pares: <b id="hPairs">0/0</b></div>
+      <div class="chip">Intentos: <b id="hTries">0</b></div>
+      <div class="chip">Tiempo: <b id="hTime">0:00</b></div>
+    </div>
+    <h1 class="sign"><div class="t1">ENCUENTRA TU</div><div class="t2">PLANTA</div></h1>
+  </header>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Dificultad" id="segDiff">
+      <button type="button" id="dFacil" data-v="facil">Fácil · 6</button>
+      <button type="button" id="dMedio" data-v="medio">Medio · 10</button>
+      <button type="button" id="dDificil" data-v="dificil">Difícil · 15</button>
+    </div>
+    <div class="seg" role="group" aria-label="Modo de juego" id="segMode">
+      <button type="button" id="mIgual" data-v="igual" title="Encuentra dos dibujos iguales">Planta + Planta</button>
+      <button type="button" id="mNombre" data-v="nombre" title="Une el dibujo con su nombre">Planta + Nombre</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn" type="button" id="bHint">Pista (3)</button>
+    <button class="btn" type="button" id="bHerb">Herbario</button>
+    <button class="btn" type="button" id="bSound" aria-pressed="true">Sonido: sí</button>
+    <button class="btn primary" type="button" id="bNew">Nuevo juego</button>
+  </div>
+
+  <main>
+    <aside class="ana">
+      <div class="ana-top">
+        <div class="portrait" id="portrait" data-pose="idle"><div class="character" aria-hidden="true"><div class="character-art"></div></div><div class="who">ANA · CHAMANA</div></div>
+        <div class="bubble" id="bubble" aria-live="polite">Hola, soy Ana, la chamana. Encuentra tu planta…</div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px">Última planta encontrada</div>
+        <div class="ficha empty" id="ficha"><p>Cuando encuentres un par, aquí aparece su ficha: para qué se usa y qué cuidado tener.</p></div>
+      </div>
+    </aside>
+    <section class="table" aria-label="Mesa de juego">
+      <div class="board" id="board"></div>
+    </section>
+  </main>
+
+  <p class="note">Las fichas describen usos tradicionales de la herbolaria mexicana. No sustituyen la consulta médica; varias de estas plantas son tóxicas en dosis altas o durante el embarazo.</p>
+</div>
+
+<div class="overlay" id="winO" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="winT">
+    <h2 id="winT">¡Encontraste todas tus plantas!</h2>
+    <div class="stars" id="winStars"></div>
+    <div class="stats" id="winStats"></div>
+    <p id="winMsg" style="margin:0"></p>
+    <div class="row"><button class="btn primary" type="button" id="wAgain">Jugar otra vez</button><button class="btn" type="button" id="wHerb">Ver herbario</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="herbO" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="herbT">
+    <div class="row" style="justify-content:space-between"><h2 id="herbT">Herbario de Ana</h2><button class="btn" type="button" id="hClose">Cerrar</button></div>
+    <div><div id="herbCount" style="font-family:var(--display);margin-bottom:4px"></div><div class="meter"><i id="herbBar"></i></div></div>
+    <div id="herbDetail"></div>
+    <div class="herb-grid" id="herbGrid"></div>
+    <div class="row"><button class="btn" type="button" id="hReset">Borrar progreso</button><span id="hResetMsg" style="font-size:13px"></span></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+/* ================= DATOS ================= */
+const PLANTS=[
+ {id:'manzanilla',n:'Manzanilla',s:'Matricaria chamomilla',parte:'Flores',uso:'Té para cólicos, inflamación estomacal y nervios. En la tradición popular, fomentos tibios para ojos irritados.',prec:'Puede causar alergia en quien reacciona a la familia de las margaritas (asteráceas).',dato:'Es de las infusiones más comunes en las casas mexicanas.'},
+ {id:'gordolobo',n:'Gordolobo',s:'Gnaphalium / Pseudognaphalium spp.',parte:'Flores y hojas',uso:'Té para tos, gripe y garganta irritada, muchas veces con miel o bugambilia.',prec:'En México el nombre se usa para varias plantas distintas (también Verbascum thapsus). Si es Verbascum, cuela bien el té: sus pelillos irritan la garganta.',dato:'Sus hojas tienen una pelusa blanca que les da color plateado.'},
+ {id:'palosanto',n:'Palo santo',s:'Bursera graveolens',parte:'Madera',uso:'Se quema como sahumerio para aromatizar y en limpias; también para ahuyentar mosquitos.',prec:'El humo en cuartos cerrados irrita las vías respiratorias. Lo sustentable es madera de árboles que cayeron solos.',dato:'Es pariente del copal: los dos son del género Bursera.'},
+ {id:'ruda',n:'Ruda',s:'Ruta graveolens',parte:'Hojas',uso:'Limpias y "mal aire"; uso tradicional para cólicos menstruales.',prec:'Tóxica en dosis altas y abortiva: nunca durante el embarazo. Su savia con sol puede quemar la piel.',dato:'Llegó de Europa con la Colonia y hoy no falta en las limpias.'},
+ {id:'pirul',n:'Pirul',s:'Schinus molle',parte:'Ramas, hojas y frutos',uso:'Ramas para barridas y limpias; hojas en baños para dolores musculares.',prec:'Sus frutos (la "pimienta rosa") en exceso irritan el estómago; no se dan a niños.',dato:'Es de Sudamérica; llegó a México en el siglo XVI y ya parece de aquí.'},
+ {id:'romero',n:'Romero',s:'Salvia rosmarinus',parte:'Hojas',uso:'Té para la digestión; enjuagues para el cabello y frotaciones para dolores.',prec:'Evitar dosis altas en embarazo y en personas con epilepsia.',dato:'Hasta 2017 su nombre científico era Rosmarinus officinalis.'},
+ {id:'hierbabuena',n:'Hierbabuena',s:'Mentha spicata',parte:'Hojas',uso:'Té para indigestión, náusea y gases; también en caldos y aguas frescas.',prec:'Puede empeorar el reflujo y la acidez.',dato:'No es la misma que la menta piperita, aunque se parecen mucho.'},
+ {id:'arnica',n:'Árnica',s:'Heterotheca inuloides',parte:'Flores',uso:'Uso externo en golpes, moretones y torceduras: pomadas, tintura o fomentos.',prec:'Solo por fuera: no se toma y no se pone en heridas abiertas.',dato:'El árnica mexicana es otra planta que el árnica europea (Arnica montana).'},
+ {id:'sabila',n:'Sábila',s:'Aloe vera',parte:'Gel de la hoja',uso:'Gel sobre quemaduras leves, raspones y piel irritada.',prec:'El jugo amarillo de la cáscara (acíbar) es un laxante fuerte; no se ingiere sin quitarlo.',dato:'En muchas casas se cuelga detrás de la puerta para proteger el hogar.'},
+ {id:'estafiate',n:'Estafiate',s:'Artemisia ludoviciana',parte:'Hojas y tallos',uso:'Té amargo para dolor de estómago, empacho y bilis.',prec:'No usar en embarazo ni por tiempo prolongado.',dato:'Crece silvestre en el norte de México; sus hojas son blanco plateado.'},
+ {id:'epazote',n:'Epazote',s:'Dysphania ambrosioides',parte:'Hojas',uso:'Condimento de frijoles y esquites; uso tradicional contra lombrices y gases.',prec:'Su aceite es tóxico en dosis altas. No se usa como remedio en embarazo ni en niños pequeños.',dato:'Su nombre viene del náhuatl epazotl.'},
+ {id:'toronjil',n:'Toronjil',s:'Agastache mexicana',parte:'Hojas y flores',uso:'Té para nervios, insomnio y "susto".',prec:'Puede dar sueño; no combinar con sedantes.',dato:'El toronjil morado es nativo de México; el "blanco" suele ser melisa.'},
+ {id:'colacaballo',n:'Cola de caballo',s:'Equisetum spp.',parte:'Tallos',uso:'Té diurético para retención de líquidos y vías urinarias.',prec:'No usar por tiempo largo: puede bajar el potasio y la vitamina B1. Evitar con problemas de riñón o corazón.',dato:'Su linaje ya existía antes de los dinosaurios.'},
+ {id:'manso',n:'Hierba del manso',s:'Anemopsis californica',parte:'Raíz y hojas',uso:'Lavados y té para inflamación, infecciones y heridas en la medicina del norte.',prec:'Hay poca evidencia clínica de su eficacia.',dato:'Crece en zonas húmedas y salitrosas del norte, Chihuahua incluido.'},
+ {id:'gobernadora',n:'Gobernadora',s:'Larrea tridentata',parte:'Hojas y ramas',uso:'Uso tradicional para riñones, artritis y lavados de piel.',prec:'Se han reportado daños al hígado y al riñón al tomarla. Mejor no ingerirla.',dato:'Es el olor a lluvia del desierto chihuahuense.'},
+ {id:'oregano',n:'Orégano',s:'Lippia graveolens',parte:'Hojas',uso:'Condimento; té para tos y cólicos.',prec:'En cantidades grandes irrita el estómago.',dato:'El orégano mexicano es otra planta que el europeo (Origanum vulgare).'},
+ {id:'salvia',n:'Salvia blanca',s:'Salvia apiana',parte:'Hojas',uso:'Atados para sahumar y para limpias.',prec:'La recolección silvestre la ha puesto en riesgo; mejor comprar salvia cultivada.',dato:'Es nativa de California y Baja California.'},
+ {id:'lavanda',n:'Lavanda',s:'Lavandula angustifolia',parte:'Flores',uso:'Aroma relajante para dormir; té suave para los nervios.',prec:'El aceite esencial no se toma.',dato:'Su nombre viene del latín lavare, "lavar".'},
+ {id:'calendula',n:'Caléndula',s:'Calendula officinalis',parte:'Flores',uso:'Pomadas y lavados para heridas pequeñas, rozaduras y piel irritada.',prec:'Puede dar alergia a personas sensibles a las asteráceas.',dato:'No es cempasúchil, aunque las dos son naranjas.'},
+ {id:'valeriana',n:'Valeriana',s:'Valeriana officinalis',parte:'Raíz',uso:'Té o cápsulas para insomnio y ansiedad.',prec:'No mezclar con alcohol ni sedantes; puede dar sueño al manejar.',dato:'Su raíz seca huele fuerte y a los gatos les encanta.'},
+ {id:'albahaca',n:'Albahaca',s:'Ocimum basilicum',parte:'Hojas',uso:'Té para la digestión; ramos para barridas en limpias.',prec:'Segura en cantidades de cocina; el aceite concentrado es otra cosa.',dato:'En los mercados se vende junto a la ruda y el pirul para limpias.'},
+ {id:'tila',n:'Tila',s:'Ternstroemia spp.',parte:'Frutos secos',uso:'Té para nervios e insomnio.',prec:'La tila de los mercados mexicanos suele ser Ternstroemia, no la tila europea (Tilia). No tomar en exceso ni con sedantes.',dato:'Se vende en bolitas cafés secas, que son sus frutos.'},
+ {id:'ajenjo',n:'Ajenjo',s:'Artemisia absinthium',parte:'Hojas',uso:'Amargo para la digestión y la falta de apetito.',prec:'Contiene tuyona, tóxica para el sistema nervioso. No en embarazo ni por tiempo prolongado.',dato:'Es la planta que le da nombre a la absenta.'},
+ {id:'muicle',n:'Muicle',s:'Justicia spicigera',parte:'Hojas y flores',uso:'Té tradicional para "limpiar la sangre" y la anemia.',prec:'Hay poca evidencia clínica de esos usos.',dato:'Al hervirlo, el agua se pinta de azul morado.'}
+];
+const BY=Object.fromEntries(PLANTS.map(p=>[p.id,p]));
+const DIFF={facil:6,medio:10,dificil:15};
+
+/* ================= PIXEL ART ================= */
+const G='#3f7d3a',LG='#6fb24a',DG='#2c5a2a';
+function sprite(fn,size=32){
+  const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');
+  const d={};
+  d.p=(x,y,col)=>{x=Math.round(x);y=Math.round(y);if(x<0||y<0||x>=size||y>=size)return;g.fillStyle=col;g.fillRect(x,y,1,1)};
+  d.r=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(x,y,w,h)};
+  d.l=(x0,y0,x1,y1,col)=>{x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);
+    const dx=Math.abs(x1-x0),sx=x0<x1?1:-1,dy=-Math.abs(y1-y0),sy=y0<y1?1:-1;let e=dx+dy;
+    for(;;){d.p(x0,y0,col);if(x0===x1&&y0===y1)break;const e2=2*e;if(e2>=dy){e+=dy;x0+=sx}if(e2<=dx){e+=dx;y0+=sy}}};
+  d.o=(cx,cy,r,col)=>{for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++)if(x*x+y*y<=r*r+r*.6)d.p(cx+x,cy+y,col)};
+  d.leaf=(x,y,a,len,w,col,vein)=>{const ca=Math.cos(a),sa=Math.sin(a);
+    for(let i=0;i<=len;i+=.5){const hw=Math.sin(Math.PI*i/len)*w;for(let j=-hw;j<=hw;j+=.5)d.p(x+ca*i-sa*j,y+sa*i+ca*j,col)}
+    if(vein)for(let i=1;i<len-1;i++)d.p(x+ca*i,y+sa*i,vein)};
+  d.blade=(x,y,a,len,w,col,dk)=>{const ca=Math.cos(a),sa=Math.sin(a);
+    for(let i=0;i<=len;i+=.5){const hw=w*(1-i/len);for(let j=-hw;j<=hw;j+=.5)d.p(x+ca*i-sa*j,y+sa*i+ca*j,j<-hw+1?dk:col)}};
+  d.daisy=(x,y,r,pet,cen,sh)=>{d.o(x,y,r,pet);if(sh){d.p(x-r,y,sh);d.p(x,y+r,sh);d.p(x+r-1,y+r-1,sh)}d.o(x,y,Math.max(1,Math.round(r*.4)),cen)};
+  d.pot=(col='#b5622f',dark='#6e3518',hi='#d98a52')=>{
+    d.r(7,22,18,2,col);d.r(8,22,16,1,hi);d.p(7,22,dark);d.p(7,23,dark);d.p(24,22,dark);d.p(24,23,dark);d.r(8,24,16,1,dark);
+    for(let y=25;y<=31;y++){const s=Math.floor((y-25)/3);d.r(9+s,y,14-2*s,1,col);d.p(9+s,y,dark);d.p(22-s,y,dark);d.p(11+s,y,hi)}
+    d.r(11,31,10,1,dark)};
+  fn(d);return c.toDataURL();
+}
+const DRAW={
+ manzanilla:d=>{d.pot();[[10,9],[17,6],[23,10],[13,14],[20,15]].forEach(([x,y])=>d.l(16,22,x,y,G));
+   d.l(12,18,9,17,LG);d.l(20,18,23,17,LG);d.l(14,20,11,21,LG);d.l(18,20,21,20,LG);d.l(13,15,11,13,LG);d.l(19,12,22,13,LG);
+   [[10,9],[17,6],[23,10],[13,14],[20,15]].forEach(([x,y])=>d.daisy(x,y,3,'#fbf8ee','#f2c230','#d9d2bf'))},
+ gordolobo:d=>{d.pot();const S='#b7c4b0',V='#8c9c88';
+   d.leaf(16,22,-2.1,9,1.8,S,V);d.leaf(16,22,-1.05,9,1.8,S,V);d.leaf(16,22,-2.7,7,1.5,S,V);d.leaf(16,22,-.45,7,1.5,S,V);
+   d.l(16,22,16,7,'#9fb09a');d.l(16,12,12,8,'#9fb09a');d.l(16,12,20,8,'#9fb09a');
+   [[16,5],[12,7],[20,7],[14,4],[18,4]].forEach(([x,y])=>{d.o(x,y,2,'#efe6b8');d.p(x,y,'#d8b84a');d.p(x-1,y+1,'#d8b84a');d.p(x+1,y-1,'#e6cf72')})},
+ palosanto:d=>{const C=['#e0b878','#c89a5a','#8a6232'];
+   [[5,29,19,10],[9,30,23,11],[13,31,27,12]].forEach(([a,b,c,e])=>{d.l(a,b,c,e,C[1]);d.l(a+1,b,c+1,e,C[0]);d.l(a,b+1,c,e+1,C[2]);
+     for(let t=.2;t<.95;t+=.27){d.p(a+(c-a)*t+.5,b+(e-b)*t+.5,C[2])}});
+   d.o(24,11,1,'#ff8a3d');d.p(24,10,'#ffd36b');d.p(23,11,'#ffd36b');d.p(25,12,'#c2421c');
+   for(let y=9;y>=1;y--){const x=24+Math.round(Math.sin(y*.75)*2.2);d.p(x,y,'#ddd6e6');if(y%2)d.p(x+1,y,'#a9a1bb')}
+   for(let y=7;y>=2;y--){const x=20+Math.round(Math.sin(y*.9+1)*1.5);if(y%2)d.p(x,y,'#8f88a3')}},
+ ruda:d=>{d.pot();d.l(16,22,11,8,G);d.l(16,22,21,8,G);d.l(16,22,16,5,G);
+   const B='#6f9f8f',BD='#4e7b6e';[[12,11],[10,13],[14,13],[20,11],[22,13],[18,13],[14,17],[18,17],[16,9],[13,19],[19,19],[15,14],[17,7],[11,16],[21,16]].forEach(([x,y],i)=>{d.o(x,y,1,i%3?B:BD);d.p(x+1,y+1,BD)});
+   [[11,6],[21,6],[16,3]].forEach(([x,y])=>{d.p(x,y,'#b3862a');d.p(x-1,y,'#f0cc4a');d.p(x+1,y,'#f0cc4a');d.p(x,y-1,'#f0cc4a');d.p(x,y+1,'#f0cc4a')})},
+ pirul:d=>{d.l(1,5,30,8,'#6b4428');d.l(1,6,30,9,'#4a2e1a');
+   for(let x=3;x<29;x+=4){const y0=6+Math.round((x/30)*3);const len=10+(x%8);
+     for(let i=0;i<len;i++){const xx=x-Math.round(i*.25),yy=y0+1+i;d.p(xx,yy,'#5d8c35');if(i%2)d.p(xx-1,yy,'#7fae4a');else d.p(xx+1,yy,'#7fae4a')}}
+   [[9,19],[10,21],[8,21],[9,23],[11,23],[21,20],[22,22],[20,22],[21,24],[23,24],[15,24],[16,26],[14,26]].forEach(([x,y],i)=>{d.p(x,y,i%2?'#e0507a':'#f07a9a');d.p(x+1,y,'#b8335a')})},
+ romero:d=>{d.pot();[[11,6],[14,4],[17,5],[20,4],[22,7]].forEach(([x,y])=>{d.l(16,22,x,y,'#5c6b3a');
+     for(let t=.15;t<.95;t+=.12){const xx=16+(x-16)*t,yy=22+(y-22)*t;d.p(xx-1,yy,'#2f5e3a');d.p(xx+1,yy-1,'#3f7848')}
+     d.p(x,y-1,'#9db6e8');d.p(x+1,y,'#7d96d8')})},
+ hierbabuena:d=>{d.pot();d.l(16,22,16,5,DG);
+   [20,15,10].forEach((y,i)=>{const w=2.4-i*.25,L=7-i;d.leaf(16,y,-.45,L,w,'#4caf50','#2e7d32');d.leaf(16,y,Math.PI+.45,L,w,'#43a047','#2e7d32')});
+   d.leaf(16,7,-Math.PI/2,5,1.8,'#66c06a','#2e7d32')},
+ arnica:d=>{d.pot();d.l(16,22,11,10,G);d.l(16,22,21,8,G);d.l(16,22,16,13,G);
+   d.leaf(16,21,-2.75,7,1.6,'#8fa86a','#6b8450');d.leaf(16,21,-.4,7,1.6,'#8fa86a','#6b8450');
+   [[11,9],[21,7],[16,13]].forEach(([x,y])=>d.daisy(x,y,3,'#f5c518','#c9781a','#d99a10'))},
+ sabila:d=>{d.pot('#a0532a');const C='#6f9e83',K='#4c7a62';
+   [[-1.57,19],[-1.15,16],[-2.0,16],[-.75,13],[-2.4,13],[-.4,10],[-2.75,10]].forEach(([a,L])=>d.blade(16,23,a,L,2.6,C,K));
+   [[15,10],[17,14],[13,16],[20,15],[10,19],[22,18],[16,18]].forEach(([x,y])=>d.p(x,y,'#d4e8da'))},
+ estafiate:d=>{d.pot();const S='#9aa69c',W='#e1e8e3',W2='#c3cec6';d.l(16,22,12,5,S);d.l(16,22,20,4,S);d.l(16,22,16,3,S);
+   [[12,5],[20,4],[16,3]].forEach(([x,y])=>{for(let t=.1;t<.95;t+=.17){const xx=16+(x-16)*t,yy=22+(y-22)*t;d.l(xx,yy,xx-3,yy-2,t*10%2>1?W:W2);d.l(xx,yy,xx+3,yy-2,W)}})},
+ epazote:d=>{d.pot();d.l(16,22,16,4,'#5b7a2e');
+   [19,15,11].forEach((y,i)=>{d.leaf(16,y,-.35,8-i,1.7,'#3d6b2a','#2a4d1d');d.leaf(16,y,Math.PI+.35,8-i,1.7,'#3d6b2a','#2a4d1d')});
+   for(let y=3;y<10;y+=1){d.p(15+(y%2)*2,y,'#a7c35a')}d.p(16,2,'#a7c35a')},
+ toronjil:d=>{d.pot();d.l(16,22,12,9,G);d.l(16,22,20,8,G);d.l(16,22,16,10,G);
+   [[16,19,-.5],[16,19,Math.PI+.5],[14,14,Math.PI+.4],[18,14,-.4]].forEach(([x,y,a])=>d.leaf(x,y,a,5,2,'#5a9a4a','#3b6f30'));
+   [[12,2,9],[20,1,8],[16,4,10]].forEach(([x,t,b])=>{for(let y=t;y<b;y++){d.p(x,y,'#b4558c');d.p(x+(y%2?1:-1),y,'#d07ab0')}})},
+ colacaballo:d=>{d.pot();[[12,4],[16,2],[20,5]].forEach(([x,top])=>{d.l(x,22,x,top,'#5aa34a');
+   for(let y=top+2;y<21;y+=3){d.p(x,y,'#2a4a20');d.p(x-1,y+1,'#7cc160');d.p(x-2,y+2,'#7cc160');d.p(x+1,y+1,'#7cc160');d.p(x+2,y+2,'#7cc160')}
+   d.p(x,top-1,'#8a6a3a');d.p(x,top-2,'#6b4f2a')})},
+ manso:d=>{d.o(16,31,9,'#7a5a3a');d.r(4,30,24,2,'#5e432a');
+   d.leaf(16,28,-2.75,11,2.6,'#5f8f4a','#3f6b30');d.leaf(16,28,-.4,11,2.6,'#5f8f4a','#3f6b30');d.leaf(16,28,-1.9,7,2,'#6ea056','#3f6b30');
+   d.l(16,28,11,13,G);d.l(16,28,21,10,G);
+   [[11,13],[21,10]].forEach(([x,y])=>{d.o(x,y,3,'#f6f2ea');d.p(x-3,y,'#d9d2c4');d.p(x+3,y,'#d9d2c4');for(let i=-5;i<0;i++)d.p(x,y+i,i%2?'#c8b47a':'#8a7a4a');d.p(x,y,'#c8b47a')})},
+ gobernadora:d=>{d.o(16,33,11,'#c9a36a');d.o(16,33,9,'#d8b57c');
+   const B='#5a3d26';const tips=[[6,10],[10,5],[16,3],[22,6],[26,11],[8,16],[24,16]];tips.forEach(([x,y])=>d.l(16,26,x,y,B));
+   tips.forEach(([x,y])=>{for(let t=.3;t<1;t+=.14){const xx=16+(x-16)*t,yy=26+(y-26)*t;d.p(xx-1,yy,'#55663a');d.p(xx+1,yy-1,'#6e7d43')}});
+   [[10,5],[22,6],[6,10]].forEach(([x,y])=>{d.p(x,y-1,'#f1d04b');d.p(x+1,y-1,'#f1d04b')});
+   [[16,3],[26,11],[24,16]].forEach(([x,y])=>{d.o(x,y-1,1,'#efe9e0')})},
+ oregano:d=>{d.pot();[[10,8],[13,5],[17,4],[21,6],[23,10]].forEach(([x,y])=>{d.l(16,22,x,y,'#6a7a3a');
+   for(let t=.2;t<1;t+=.18){const xx=16+(x-16)*t,yy=22+(y-22)*t;d.o(xx-1,yy,1,'#7fae55');d.p(xx+1,yy,'#5f8f3e')}d.p(x,y-1,'#f2efe6');d.p(x+1,y-1,'#e6d6ec')})},
+ salvia:d=>{for(let t=0;t<=1;t+=.16){const x=8+16*t,y=27-21*t;d.leaf(x,y,-1.3,6,1.9,'#c9d6cc','#a3b3a7');d.leaf(x,y,-.25,6,1.9,'#d7e2da','#a3b3a7')}
+   d.l(5,30,9,26,'#7a5a3a');d.l(6,30,10,26,'#5e432a');
+   [.2,.45,.7].forEach(t=>{const x=8+16*t,y=27-21*t;d.l(x-3,y-2,x+3,y+2,'#c0392b');d.l(x-2,y-2,x+3,y+1,'#e2584a')})},
+ lavanda:d=>{d.pot();d.leaf(16,21,-2.8,7,1.1,'#9fb39a');d.leaf(16,21,-.35,7,1.1,'#9fb39a');
+   [10,13,16,19,22].forEach((x,i)=>{const top=6+(i%2)*2;d.l(16,22,x,top+5,'#7b8f6a');for(let y=top;y<top+6;y++){d.p(x,y,'#8c6cc8');d.p(x+(y%2?1:-1),y,'#b49ae6')}d.p(x,top-1,'#b49ae6')})},
+ calendula:d=>{d.pot();d.l(16,22,11,10,G);d.l(16,22,21,9,G);d.l(16,22,16,6,G);
+   d.leaf(16,20,-2.6,6,1.8,'#6aa84f','#4a8a36');d.leaf(16,20,-.55,6,1.8,'#6aa84f','#4a8a36');
+   [[10,10],[22,10],[16,5]].forEach(([x,y])=>d.daisy(x,y,3,'#f08a24','#7a3e10','#d4661a'))},
+ valeriana:d=>{d.pot();d.l(16,22,11,7,G);d.l(16,22,21,6,G);d.l(16,22,16,9,G);
+   [[16,19],[16,15]].forEach(([x,y])=>{for(let i=1;i<6;i++){d.p(x-i,y-i*.4,'#4f8f3c');d.p(x+i,y-i*.4,'#4f8f3c')}});
+   [[11,6],[21,5],[16,8]].forEach(([x,y])=>{d.r(x-3,y-1,7,2,'#f2d3dc');d.r(x-2,y-2,5,1,'#f2d3dc');[[x-2,y],[x,y-1],[x+2,y],[x+1,y-2]].forEach(([a,b])=>d.p(a,b,'#d38aa0'))})},
+ albahaca:d=>{d.pot();d.l(16,22,16,6,DG);
+   [[20,2.6,6.5],[15,2.4,6],[10,2,5]].forEach(([y,w,L],i)=>{d.leaf(16,y,-2.55+i*.15,L,w,'#3fa34d','#2b7a37');d.leaf(16,y,-.6-i*.15,L,w,'#4cb85a','#2b7a37')});
+   for(let y=2;y<7;y++){d.p(16,y,'#f4f1ea');if(y%2)d.p(15,y,'#e8e0f0');else d.p(17,y,'#e8e0f0')}},
+ tila:d=>{for(let y=20;y<=28;y++){const s=Math.floor((y-20)*1.1);d.r(4+s,y,24-2*s,1,'#a85a2c');d.p(4+s,y,'#6e3518');d.p(27-s,y,'#6e3518')}
+   d.r(3,19,26,2,'#c4703a');d.r(4,19,24,1,'#d98a52');
+   [[8,17],[13,16],[18,17],[23,17],[10,13],[16,12],[21,14],[13,9],[19,9]].forEach(([x,y])=>{d.o(x,y,2,'#8a5a32');d.p(x-1,y-1,'#b07a46');d.p(x,y-2,'#4a2e1a')});
+   [[24,10],[7,12]].forEach(([x,y])=>{d.p(x,y,'#d9a441');d.p(x-1,y,'#f3e6c0');d.p(x+1,y,'#f3e6c0');d.p(x,y-1,'#f3e6c0');d.p(x,y+1,'#f3e6c0')})},
+ ajenjo:d=>{d.pot();const S='#8f9f86';[[11,7],[16,4],[21,6]].forEach(([x,y])=>{d.l(16,22,x,y,S);
+   for(let t=.15;t<.9;t+=.18){const xx=16+(x-16)*t,yy=22+(y-22)*t;d.l(xx,yy,xx-3,yy-1,'#a7b8a0');d.p(xx-3,yy-2,'#a7b8a0');d.l(xx,yy,xx+3,yy-1,'#b5c4ad');d.p(xx+3,yy-2,'#b5c4ad')}
+   for(let i=1;i<4;i++)d.p(x+i,y+i,'#e3cf5a');d.p(x-1,y+1,'#e3cf5a')})},
+ muicle:d=>{d.pot();d.l(16,22,11,8,G);d.l(16,22,21,7,G);d.l(16,22,16,6,G);
+   [[16,19,-.5],[16,19,Math.PI+.5],[14,13,Math.PI+.6],[18,12,-.6]].forEach(([x,y,a])=>d.leaf(x,y,a,6,2.1,'#2f6e3a','#1f4f28'));
+   [[11,8],[21,7],[16,6],[13,5],[19,4]].forEach(([x,y])=>{d.l(x,y,x+2,y-3,'#f0662a');d.p(x+2,y-3,'#ffb070');d.p(x,y,'#c94a1a')})}
+};
+const IMG={};PLANTS.forEach(p=>IMG[p.id]=sprite(DRAW[p.id]));
+const backLeaf=sprite(d=>{d.leaf(16,27,-Math.PI/2,22,6,'#3f8a5e','#2a6045');d.leaf(15,20,-2.3,9,3,'#4a9a6a','#2a6045');d.leaf(17,20,-.85,9,3,'#4a9a6a','#2a6045');d.l(16,27,16,30,'#2a6045')});
+document.documentElement.style.setProperty('--backleaf',`url(${backLeaf})`);
+
+/* ================= ALMACENAMIENTO ================= */
+const store={get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let seen=new Set(store.get('etp-seen',[]));
+let best=store.get('etp-best',{});
+let cfg=Object.assign({diff:'facil',mode:'igual',sound:true},store.get('etp-cfg',{}));
+
+/* ================= SONIDO ================= */
+let ac=null;
+function beep(seq){if(!cfg.sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();let t=ac.currentTime;
+  seq.forEach(([f,d,type='square'])=>{const o=ac.createOscillator(),v=ac.createGain();o.type=type;o.frequency.value=f;v.gain.setValueAtTime(.06,t);v.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(v).connect(ac.destination);o.start(t);o.stop(t+d);t+=d*.85})}catch(e){}}
+const SFX={flip:()=>beep([[520,.05]]),match:()=>beep([[660,.08],[880,.08],[1180,.14]]),miss:()=>beep([[220,.12,'triangle'],[170,.16,'triangle']]),win:()=>beep([[523,.1],[659,.1],[784,.1],[1046,.25],[784,.1],[1046,.35]])};
+
+/* ================= JUEGO ================= */
+const $=id=>document.getElementById(id);
+const board=$('board');
+let deck=[],first=null,lock=false,pairs=0,tries=0,total=0,t0=0,elapsed=0,tick=null,hints=3,lastMiss=-1,anaPoseTimeout;
+const MISS=['Esa no era. Fíjate bien dónde quedó cada una.','Casi. Las plantas también saben esconderse.','Respira. La memoria se cuida como un huerto.','No son pareja. Inténtalo otra vez.','Mmm, esas dos no se conocen.','Recuerda la forma de sus hojas.'];
+
+function say(t){$('bubble').textContent=t}
+function animateAna(poseName,duration=1800){
+  const p=$('portrait');clearTimeout(anaPoseTimeout);p.dataset.pose='idle';void p.offsetWidth;
+  p.dataset.pose=poseName;p.classList.remove('bounce');void p.offsetWidth;p.classList.add('bounce');
+  if(duration)anaPoseTimeout=setTimeout(()=>{if(p.dataset.pose===poseName){p.dataset.pose='idle';p.classList.remove('bounce')}},duration);
+}
+function fmt(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function hud(){$('hPairs').textContent=pairs+'/'+total;$('hTries').textContent=tries;$('hTime').textContent=fmt(elapsed);
+  $('bHint').textContent='Pista ('+hints+')';$('bHint').disabled=hints<=0||pairs===total}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function syncSeg(){document.querySelectorAll('#segDiff button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===cfg.diff));
+  document.querySelectorAll('#segMode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===cfg.mode));
+  $('bSound').textContent='Sonido: '+(cfg.sound?'sí':'no');$('bSound').setAttribute('aria-pressed',cfg.sound)}
+
+function newGame(){
+  clearTimeout(anaPoseTimeout);$('portrait').dataset.pose='idle';$('portrait').classList.remove('bounce');
+  clearInterval(tick);tick=null;t0=0;elapsed=0;first=null;lock=false;pairs=0;tries=0;hints=3;
+  total=DIFF[cfg.diff];
+  const chosen=shuffle(PLANTS.slice()).slice(0,total);
+  deck=shuffle(chosen.flatMap(p=>cfg.mode==='nombre'?[{id:p.id,t:'img'},{id:p.id,t:'name'}]:[{id:p.id,t:'img'},{id:p.id,t:'img'}]));
+  const n=deck.length;const cols=n<=12?4:n<=20?5:6;const colsM=n<=12?4:n<=20?4:5;
+  board.style.setProperty('--cols',cols);board.style.setProperty('--cols-m',colsM);
+  board.innerHTML='';
+  deck.forEach((c,i)=>{const p=BY[c.id];const b=document.createElement('button');b.type='button';b.className='card';b.id='card-'+i;b.dataset.i=i;
+    b.setAttribute('aria-label','Carta '+(i+1)+', boca abajo');
+    const front=c.t==='img'
+      ?`<div class="face front"><img alt="" src="${IMG[c.id]}"><span class="nm">${cfg.mode==='nombre'?'':p.n}</span></div>`
+      :`<div class="face front name"><span class="nm">${p.n}</span><span class="sc">${p.s}</span></div>`;
+    b.innerHTML=`<div class="inner"><div class="face back"></div>${front}</div>`;
+    b.addEventListener('click',()=>flip(b));board.appendChild(b)});
+  say(cfg.mode==='nombre'?'Hola, soy Ana, la chamana. Une cada planta con su nombre…':'Hola, soy Ana, la chamana. Encuentra tu planta…');
+  hud();
+}
+function startClock(){if(tick)return;t0=Date.now()-elapsed*1000;tick=setInterval(()=>{elapsed=Math.floor((Date.now()-t0)/1000);$('hTime').textContent=fmt(elapsed)},250)}
+function reveal(b){b.classList.add('up');const c=deck[b.dataset.i];b.setAttribute('aria-label',BY[c.id].n+(c.t==='name'?' (nombre)':''))}
+function hide(b){b.classList.remove('up');b.setAttribute('aria-label','Carta '+(+b.dataset.i+1)+', boca abajo')}
+
+function flip(b){
+  if(lock||b.classList.contains('up')||b.classList.contains('done'))return;
+  startClock();SFX.flip();reveal(b);
+  if(!first){first=b;animateAna('thinking',1400);return}
+  const a=first;first=null;tries++;
+  const ca=deck[a.dataset.i],cb=deck[b.dataset.i];
+  if(ca.id===cb.id){
+    pairs++;[a,b].forEach(x=>{x.classList.add('done');x.classList.remove('up');x.setAttribute('aria-label',BY[ca.id].n+', encontrada')});
+    const p=BY[ca.id];say('¡'+p.n+'! '+p.dato);animateAna('found');SFX.match();showFicha(p,$('ficha'));
+    seen.add(p.id);store.set('etp-seen',[...seen]);hud();
+    if(pairs===total)setTimeout(win,650);
+  }else{
+    lock=true;hud();animateAna('oops',1000);
+    let k;do{k=Math.random()*MISS.length|0}while(k===lastMiss);lastMiss=k;say(MISS[k]);
+    setTimeout(()=>{SFX.miss();[a,b].forEach(x=>{x.classList.add('shake')})},380);
+    setTimeout(()=>{[a,b].forEach(x=>{x.classList.remove('shake');hide(x)});lock=false},1000);
+  }
+}
+function hint(){
+  if(hints<=0||lock||pairs===total)return;
+  const left=[...board.querySelectorAll('.card:not(.done)')].filter(x=>x!==first);
+  const ids=[...new Set(left.map(x=>deck[x.dataset.i].id))];
+  const pick=first?deck[first.dataset.i].id:ids[Math.random()*ids.length|0];
+  const cards=[...board.querySelectorAll('.card:not(.done)')].filter(x=>deck[x.dataset.i].id===pick&&x!==first);
+  hints--;tries++;startClock();lock=true;hud();
+  animateAna('thinking',1400);
+  say(first?'Mira bien… su pareja está aquí. La pista cuenta como un intento.':'Mira bien… ahí está una pareja. La pista cuenta como un intento.');
+  cards.forEach(x=>x.classList.add('peek'));
+  setTimeout(()=>{cards.forEach(x=>x.classList.remove('peek'));lock=false},1100);
+}
+function starsFor(){const r=tries/total;return r<=1.5?3:r<=2.2?2:1}
+function win(){
+  clearInterval(tick);tick=null;SFX.win();
+  const key=cfg.diff+'-'+cfg.mode,prev=best[key];
+  const better=!prev||tries<prev.tries||(tries===prev.tries&&elapsed<prev.time);
+  if(better){best[key]={tries,time:elapsed};store.set('etp-best',best)}
+  const s=starsFor();
+  $('winStars').innerHTML='★'.repeat(s)+'<span class="off">'+'★'.repeat(3-s)+'</span>';
+  const rec=best[key];
+  $('winStats').innerHTML=`<div class="stat"><div class="k">Intentos</div><div class="v">${tries}</div></div>
+    <div class="stat"><div class="k">Tiempo</div><div class="v">${fmt(elapsed)}</div></div>
+    <div class="stat"><div class="k">Récord (${cfg.diff==='facil'?'fácil':cfg.diff==='medio'?'medio':'difícil'})</div><div class="v">${rec.tries} · ${fmt(rec.time)}</div></div>
+    <div class="stat"><div class="k">Herbario</div><div class="v">${seen.size}/${PLANTS.length}</div></div>`;
+  $('winMsg').innerHTML=(better&&prev?'<span class="new">Nuevo récord.</span> ':'')+(s===3?'Memoria de curandera: casi sin errores.':s===2?'Buen trabajo. Con práctica bajas los intentos.':'Las encontraste todas. La próxima, fíjate en la forma de las hojas.');
+  say('¡Encontraste todas tus plantas! El herbario ya las guarda.');animateAna('win',0);
+  open('winO');
+}
+function showFicha(p,el){
+  el.className='ficha';
+  el.innerHTML=`<div class="head"><img alt="" src="${IMG[p.id]}"><div><h2>${p.n}</h2><div class="sci">${p.s}</div></div></div>
+   <div><div class="lbl">Parte usada</div><p>${p.parte}</p></div>
+   <div><div class="lbl">Uso tradicional</div><p>${p.uso}</p></div>
+   <div class="warn"><div class="lbl">Precaución</div><p>${p.prec}</p></div>
+   <p><b>Dato:</b> ${p.dato}</p>`;
+}
+
+/* ================= HERBARIO ================= */
+function renderHerb(sel){
+  $('herbCount').textContent=`Plantas descubiertas: ${seen.size} de ${PLANTS.length}`;
+  $('herbBar').style.width=(seen.size/PLANTS.length*100)+'%';
+  $('herbGrid').innerHTML='';
+  PLANTS.forEach(p=>{const ok=seen.has(p.id);const b=document.createElement('button');b.type='button';b.id='herb-'+p.id;b.className='herb'+(ok?'':' locked');
+    b.innerHTML=`<img alt="" src="${IMG[p.id]}"><span>${ok?p.n:'???'}</span>`;
+    b.setAttribute('aria-label',ok?p.n:'Planta sin descubrir');if(!ok)b.disabled=true;
+    b.addEventListener('click',()=>renderHerb(p.id));$('herbGrid').appendChild(b)});
+  const d=$('herbDetail');d.innerHTML='';
+  if(sel&&seen.has(sel)){const f=document.createElement('div');showFicha(BY[sel],f);d.appendChild(f)}
+  else d.innerHTML='<p style="margin:0;font-size:14px">'+(seen.size?'Toca una planta descubierta para ver su ficha.':'Todavía no hay plantas. Encuentra pares para llenar el herbario.')+'</p>';
+}
+let resetArmed=false;
+$('hReset').addEventListener('click',()=>{
+  if(!resetArmed){resetArmed=true;$('hReset').textContent='Sí, borrar todo';$('hResetMsg').textContent='Se borran plantas descubiertas y récords.';return}
+  seen=new Set();best={};store.set('etp-seen',[]);store.set('etp-best',{});resetArmed=false;$('hReset').textContent='Borrar progreso';$('hResetMsg').textContent='Progreso borrado.';renderHerb()});
+
+/* ================= MODALES ================= */
+let lastFocus=null;
+function open(id){lastFocus=document.activeElement;$(id).hidden=false;const f=$(id).querySelector('button');f&&f.focus()}
+function close(id){$(id).hidden=true;resetArmed=false;$('hReset').textContent='Borrar progreso';$('hResetMsg').textContent='';lastFocus&&lastFocus.focus&&lastFocus.focus()}
+['winO','herbO'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target.id===id)close(id)}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('herbO').hidden)close('herbO');else if(!$('winO').hidden)close('winO')}});
+
+/* ================= EVENTOS ================= */
+$('segDiff').addEventListener('click',e=>{const v=e.target.dataset&&e.target.dataset.v;if(!v)return;cfg.diff=v;store.set('etp-cfg',cfg);syncSeg();newGame()});
+$('segMode').addEventListener('click',e=>{const v=e.target.dataset&&e.target.dataset.v;if(!v)return;cfg.mode=v;store.set('etp-cfg',cfg);syncSeg();newGame()});
+$('bNew').addEventListener('click',newGame);
+$('bHint').addEventListener('click',hint);
+$('bSound').addEventListener('click',()=>{cfg.sound=!cfg.sound;store.set('etp-cfg',cfg);syncSeg()});
+$('bHerb').addEventListener('click',()=>{renderHerb();open('herbO')});
+$('hClose').addEventListener('click',()=>close('herbO'));
+$('wAgain').addEventListener('click',()=>{close('winO');newGame()});
+$('wHerb').addEventListener('click',()=>{close('winO');renderHerb();open('herbO')});
+
+syncSeg();newGame();
+})();
+</script>
+
+</body></html>
